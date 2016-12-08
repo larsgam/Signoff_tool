@@ -1,31 +1,20 @@
 ﻿Public Class RadioButtonGroup
     Private radiobuttonsInput(2) As RadioButton
-    Private mRButton As RadioButton
-    Private mAButton As RadioButton
     Private mGButton As RadioButton
+    Private mAButton As RadioButton
+    Private mRButton As RadioButton
     Private mRAG As String
 
     Public Sub New()
 
     End Sub
-    Public Sub New(ByRef RButton As RadioButton,
+    Public Sub New(ByRef GButton As RadioButton,
                    ByRef AButton As RadioButton,
-                   ByRef GButton As RadioButton)
-        mRButton = RButton
-        mAButton = AButton
+                   ByRef RButton As RadioButton)
         mGButton = GButton
+        mAButton = AButton
+        mRButton = RButton
     End Sub
-
-    'Public Sub checkRAG(ByVal RAG As String)
-    '    Select Case RAG
-    '        Case "R" 
-    '            mRButton.Checked = True
-    '        Case "A"
-    '            mAButton.Checked = True
-    '        Case "G"
-    '            mGButton.Checked = True
-    '    End Select
-    'End Sub
 
     Public Property RAG() As String
         Get
@@ -36,7 +25,7 @@
             ElseIf mGButton.Checked = True Then
                 mRAG = "G"
             Else
-                mRAG = "R"
+                mRAG = "N"
             End If
             Return mRAG
         End Get

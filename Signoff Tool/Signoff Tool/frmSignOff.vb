@@ -6,19 +6,19 @@ Public Class Form1
     Private rbgOutputControl As RadioButtonGroup
     Private rbgMTMControl As RadioButtonGroup
 
-    'Dim ProcessIDs() As Integer
-    'Dim ProcessNames() As String
-    'Dim DataIDs() As Integer
-    'Dim DataNames() As String
-
-    'Private Sub defScope()
-
-    'End Sub
 
     Dim ProcessIDs = {1, 2, 3, 4}
     Dim ProcessNames = {"Input Control", "Output Control", "MTM Comparison", "Model Performance"}
     Dim DataIDs = {1, 2, 3, 4}
     Dim DataNames = {"PFE", "CURRENT EXPOSURE", "REA", "REA ALLOCATION"}
+
+    Dim RAGs = {"Green", "Amber", "Red"}
+
+
+    ' Arrays of radiobutton groups  - one for process and one for data
+    Private rbgProcessRadioButtonGroups(ProcessNames.length - 1) As RadioButtonGroup
+    Private rbgDataRadioButtonGroups(DataNames.length - 1) As RadioButtonGroup
+
 
 
     Private Sub ExitToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles ExitToolStripMenuItem.Click
@@ -92,7 +92,7 @@ Public Class Form1
     End Function
 
     Private Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
-        rbgInputControl = New RadioButtonGroup(rbnInputRed, rbnInputAmber, rbnInputGreen)
+        rbgInputControl = New RadioButtonGroup(rbnInputGreen, rbnInputAmber, rbnInputRed)
         DataSetCreate()
         Addbuttons()
     End Sub
@@ -290,7 +290,7 @@ Public Class Form1
 
     Private Sub Addbuttons()
         Dim gbx As GroupBox
-        Dim rbutton As RadioButton
+        Dim rbutton(2) As RadioButton
         Dim tbx As TextBox
 
         Dim xStart As Integer
@@ -308,6 +308,7 @@ Public Class Form1
         Dim tbxHeight As Integer
         Dim tbxwidth As Integer
 
+        Dim rbg As RadioButtonGroup
 
         Dim f As New System.Drawing.Font("Microsoft Sans Serif", 8, FontStyle.Regular)
 
@@ -326,7 +327,8 @@ Public Class Form1
         tbxHeight = 50
         tbxwidth = 170
 
-        For i As Integer = 0 To 3
+        ' Process Signoff 
+        For i = 0 To ProcessNames.length - 1
             gbx = New GroupBox
             gbx.Name = "gbxProcess" & ProcessIDs(i).ToString()
             gbx.Text = ProcessNames(i)
@@ -337,34 +339,22 @@ Public Class Form1
             gbx.Font = f
             gbxDailyProcess.Controls.Add(gbx)
 
+            ' Create 3 radio buttons - for Green, Amber and Red 
+            Dim j = 0
+            For Each rag In RAGs
+                rbutton(j) = New RadioButton
+                rbutton(j).Name = "rbnProcess" & ProcessIDs(i).ToString() & rag
+                rbutton(j).Text = rag
+                rbutton(j).Width = rbnWidth
+                rbutton(j).Left = rbnxStart + j * (rbnWidth + rbnHSpace)
+                rbutton(j).Top = rbnyStart
+                rbutton(j).UseVisualStyleBackColor = True
+                gbx.Controls.Add(rbutton(j))
+                j = j + 1
+            Next rag
+            rbgProcessRadioButtonGroups(i) = New RadioButtonGroup(rbutton(0), rbutton(1), rbutton(2))
 
-            rbutton = New RadioButton
-            rbutton.Name = "rbnProcess" & ProcessIDs(i).ToString() & "Green"
-            rbutton.Text = "Green"
-            rbutton.TabIndex = 1 + i
-            rbutton.Width = rbnWidth
-            rbutton.Left = rbnxStart
-            rbutton.Top = rbnyStart
-            rbutton.UseVisualStyleBackColor = True
-            gbx.Controls.Add(rbutton)
 
-            rbutton = New RadioButton
-            rbutton.Name = "rbnProcess" & ProcessIDs(i).ToString() & "Amber"
-            rbutton.Text = "Amber"
-            rbutton.Width = rbnWidth
-            rbutton.Left = rbnxStart + rbnWidth + rbnHSpace
-            rbutton.Top = rbnyStart
-            rbutton.UseVisualStyleBackColor = True
-            gbx.Controls.Add(rbutton)
-
-            rbutton = New RadioButton
-            rbutton.Name = "rbnProcess" & ProcessIDs(i).ToString() & "Red"
-            rbutton.Text = "Red"
-            rbutton.Width = rbnWidth
-            rbutton.Left = rbnxStart + 2 * (rbnWidth + rbnHSpace)
-            rbutton.Top = rbnyStart
-            rbutton.UseVisualStyleBackColor = True
-            gbx.Controls.Add(rbutton)
 
             ' Textbox for comments
             tbx = New TextBox
@@ -380,9 +370,9 @@ Public Class Form1
         Next i
 
 
-        ' DATA Controls
+        ' DATA Signoff
 
-        For i As Integer = 0 To 3
+        For i As Integer = 0 To DataNames.length - 1
             gbx = New GroupBox
             gbx.Name = "gbxData" & ProcessIDs(i).ToString()
             gbx.Text = DataNames(i)
@@ -393,34 +383,21 @@ Public Class Form1
             gbx.Font = f
             gbxDailyData.Controls.Add(gbx)
 
+            ' Create 3 radio buttons - for Green, Amber and Red 
+            Dim j = 0
+            For Each rag In RAGs
+                rbutton(j) = New RadioButton
+                rbutton(j).Name = "rbnData" & ProcessIDs(i).ToString() & rag
+                rbutton(j).Text = rag
+                rbutton(j).Width = rbnWidth
+                rbutton(j).Left = rbnxStart + j * (rbnWidth + rbnHSpace)
+                rbutton(j).Top = rbnyStart
+                rbutton(j).UseVisualStyleBackColor = True
+                gbx.Controls.Add(rbutton(j))
+                j = j + 1
+            Next rag
+            rbgDataRadioButtonGroups(i) = New RadioButtonGroup(rbutton(0), rbutton(1), rbutton(2))
 
-            rbutton = New RadioButton
-            rbutton.Name = "rbnData" & ProcessIDs(i).ToString() & "Green"
-            rbutton.Text = "Green"
-            rbutton.TabIndex = 1 + i
-            rbutton.Width = rbnWidth
-            rbutton.Left = rbnxStart
-            rbutton.Top = rbnyStart
-            rbutton.UseVisualStyleBackColor = True
-            gbx.Controls.Add(rbutton)
-
-            rbutton = New RadioButton
-            rbutton.Name = "rbnData" & ProcessIDs(i).ToString() & "Amber"
-            rbutton.Text = "Amber"
-            rbutton.Width = rbnWidth
-            rbutton.Left = rbnxStart + rbnWidth + rbnHSpace
-            rbutton.Top = rbnyStart
-            rbutton.UseVisualStyleBackColor = True
-            gbx.Controls.Add(rbutton)
-
-            rbutton = New RadioButton
-            rbutton.Name = "rbnData" & ProcessIDs(i).ToString() & "Red"
-            rbutton.Text = "Red"
-            rbutton.Width = rbnWidth
-            rbutton.Left = rbnxStart + 2 * (rbnWidth + rbnHSpace)
-            rbutton.Top = rbnyStart
-            rbutton.UseVisualStyleBackColor = True
-            gbx.Controls.Add(rbutton)
 
             ' Textbox for comments
             tbx = New TextBox
