@@ -24,7 +24,8 @@ Partial Class Form1
     Private Sub InitializeComponent()
         Me.TabControl = New System.Windows.Forms.TabControl()
         Me.TabPage1 = New System.Windows.Forms.TabPage()
-        Me.gbxDailyProcess = New System.Windows.Forms.GroupBox()
+        Me.btnProcessGreen = New System.Windows.Forms.Button()
+        Me.btnUpdate = New System.Windows.Forms.Button()
         Me.gbxInput = New System.Windows.Forms.GroupBox()
         Me.tbxCommentInput = New System.Windows.Forms.TextBox()
         Me.btnUpdateInput = New System.Windows.Forms.Button()
@@ -33,15 +34,16 @@ Partial Class Form1
         Me.rbnInputRed = New System.Windows.Forms.RadioButton()
         Me.rbnInputGreen = New System.Windows.Forms.RadioButton()
         Me.rbnInputAmber = New System.Windows.Forms.RadioButton()
+        Me.gbxDailyData = New System.Windows.Forms.GroupBox()
+        Me.gbxDailyProcess = New System.Windows.Forms.GroupBox()
         Me.dtpAsofdate = New System.Windows.Forms.DateTimePicker()
         Me.TabPage2 = New System.Windows.Forms.TabPage()
         Me.MenuStrip1 = New System.Windows.Forms.MenuStrip()
         Me.FileToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.ExitToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
-        Me.gbxDailyData = New System.Windows.Forms.GroupBox()
+        Me.btnDataGreen = New System.Windows.Forms.Button()
         Me.TabControl.SuspendLayout()
         Me.TabPage1.SuspendLayout()
-        Me.gbxDailyProcess.SuspendLayout()
         Me.gbxInput.SuspendLayout()
         Me.MenuStrip1.SuspendLayout()
         Me.SuspendLayout()
@@ -53,32 +55,43 @@ Partial Class Form1
         Me.TabControl.Location = New System.Drawing.Point(12, 57)
         Me.TabControl.Name = "TabControl"
         Me.TabControl.SelectedIndex = 0
-        Me.TabControl.Size = New System.Drawing.Size(1259, 788)
+        Me.TabControl.Size = New System.Drawing.Size(1259, 897)
         Me.TabControl.TabIndex = 0
         '
         'TabPage1
         '
         Me.TabPage1.BackColor = System.Drawing.Color.WhiteSmoke
+        Me.TabPage1.Controls.Add(Me.btnDataGreen)
+        Me.TabPage1.Controls.Add(Me.btnProcessGreen)
+        Me.TabPage1.Controls.Add(Me.btnUpdate)
+        Me.TabPage1.Controls.Add(Me.gbxInput)
         Me.TabPage1.Controls.Add(Me.gbxDailyData)
         Me.TabPage1.Controls.Add(Me.gbxDailyProcess)
         Me.TabPage1.Controls.Add(Me.dtpAsofdate)
         Me.TabPage1.Location = New System.Drawing.Point(4, 29)
         Me.TabPage1.Name = "TabPage1"
         Me.TabPage1.Padding = New System.Windows.Forms.Padding(3)
-        Me.TabPage1.Size = New System.Drawing.Size(1251, 755)
+        Me.TabPage1.Size = New System.Drawing.Size(1251, 864)
         Me.TabPage1.TabIndex = 0
         Me.TabPage1.Text = "Daily Signoff"
         '
-        'gbxDailyProcess
+        'btnProcessGreen
         '
-        Me.gbxDailyProcess.Controls.Add(Me.gbxInput)
-        Me.gbxDailyProcess.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.gbxDailyProcess.Location = New System.Drawing.Point(11, 78)
-        Me.gbxDailyProcess.Name = "gbxDailyProcess"
-        Me.gbxDailyProcess.Size = New System.Drawing.Size(583, 609)
-        Me.gbxDailyProcess.TabIndex = 1
-        Me.gbxDailyProcess.TabStop = False
-        Me.gbxDailyProcess.Text = "Process Signoff"
+        Me.btnProcessGreen.Location = New System.Drawing.Point(231, 736)
+        Me.btnProcessGreen.Name = "btnProcessGreen"
+        Me.btnProcessGreen.Size = New System.Drawing.Size(131, 62)
+        Me.btnProcessGreen.TabIndex = 9
+        Me.btnProcessGreen.Text = "All Process Green"
+        Me.btnProcessGreen.UseVisualStyleBackColor = True
+        '
+        'btnUpdate
+        '
+        Me.btnUpdate.Location = New System.Drawing.Point(50, 736)
+        Me.btnUpdate.Name = "btnUpdate"
+        Me.btnUpdate.Size = New System.Drawing.Size(131, 62)
+        Me.btnUpdate.TabIndex = 8
+        Me.btnUpdate.Text = "Update"
+        Me.btnUpdate.UseVisualStyleBackColor = True
         '
         'gbxInput
         '
@@ -91,7 +104,7 @@ Partial Class Form1
         Me.gbxInput.Controls.Add(Me.rbnInputGreen)
         Me.gbxInput.Controls.Add(Me.rbnInputAmber)
         Me.gbxInput.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.gbxInput.Location = New System.Drawing.Point(13, 497)
+        Me.gbxInput.Location = New System.Drawing.Point(654, 724)
         Me.gbxInput.Name = "gbxInput"
         Me.gbxInput.Size = New System.Drawing.Size(559, 107)
         Me.gbxInput.TabIndex = 5
@@ -181,6 +194,26 @@ Partial Class Form1
         Me.rbnInputAmber.Text = "Amber"
         Me.rbnInputAmber.UseVisualStyleBackColor = True
         '
+        'gbxDailyData
+        '
+        Me.gbxDailyData.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.gbxDailyData.Location = New System.Drawing.Point(630, 78)
+        Me.gbxDailyData.Name = "gbxDailyData"
+        Me.gbxDailyData.Size = New System.Drawing.Size(583, 609)
+        Me.gbxDailyData.TabIndex = 2
+        Me.gbxDailyData.TabStop = False
+        Me.gbxDailyData.Text = "Data Signoff"
+        '
+        'gbxDailyProcess
+        '
+        Me.gbxDailyProcess.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.gbxDailyProcess.Location = New System.Drawing.Point(11, 78)
+        Me.gbxDailyProcess.Name = "gbxDailyProcess"
+        Me.gbxDailyProcess.Size = New System.Drawing.Size(583, 609)
+        Me.gbxDailyProcess.TabIndex = 1
+        Me.gbxDailyProcess.TabStop = False
+        Me.gbxDailyProcess.Text = "Process Signoff"
+        '
         'dtpAsofdate
         '
         Me.dtpAsofdate.Format = System.Windows.Forms.DateTimePickerFormat.[Short]
@@ -194,7 +227,7 @@ Partial Class Form1
         Me.TabPage2.Location = New System.Drawing.Point(4, 29)
         Me.TabPage2.Name = "TabPage2"
         Me.TabPage2.Padding = New System.Windows.Forms.Padding(3)
-        Me.TabPage2.Size = New System.Drawing.Size(997, 755)
+        Me.TabPage2.Size = New System.Drawing.Size(1251, 864)
         Me.TabPage2.TabIndex = 1
         Me.TabPage2.Text = "Monthly Reporting"
         Me.TabPage2.UseVisualStyleBackColor = True
@@ -222,30 +255,28 @@ Partial Class Form1
         Me.ExitToolStripMenuItem.Size = New System.Drawing.Size(124, 30)
         Me.ExitToolStripMenuItem.Text = "Exit"
         '
-        'gbxDailyData
+        'btnDataGreen
         '
-        Me.gbxDailyData.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.gbxDailyData.Location = New System.Drawing.Point(630, 78)
-        Me.gbxDailyData.Name = "gbxDailyData"
-        Me.gbxDailyData.Size = New System.Drawing.Size(583, 609)
-        Me.gbxDailyData.TabIndex = 2
-        Me.gbxDailyData.TabStop = False
-        Me.gbxDailyData.Text = "Data Signoff"
+        Me.btnDataGreen.Location = New System.Drawing.Point(412, 736)
+        Me.btnDataGreen.Name = "btnDataGreen"
+        Me.btnDataGreen.Size = New System.Drawing.Size(131, 62)
+        Me.btnDataGreen.TabIndex = 10
+        Me.btnDataGreen.Text = "All Data Green"
+        Me.btnDataGreen.UseVisualStyleBackColor = True
         '
         'Form1
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(9.0!, 20.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.AutoSize = True
-        Me.ClientSize = New System.Drawing.Size(1283, 857)
+        Me.ClientSize = New System.Drawing.Size(1283, 966)
         Me.Controls.Add(Me.TabControl)
         Me.Controls.Add(Me.MenuStrip1)
         Me.MainMenuStrip = Me.MenuStrip1
         Me.Name = "Form1"
-        Me.Text = "Form1"
+        Me.Text = "p"
         Me.TabControl.ResumeLayout(False)
         Me.TabPage1.ResumeLayout(False)
-        Me.gbxDailyProcess.ResumeLayout(False)
         Me.gbxInput.ResumeLayout(False)
         Me.gbxInput.PerformLayout()
         Me.MenuStrip1.ResumeLayout(False)
@@ -272,4 +303,7 @@ Partial Class Form1
     Friend WithEvents tbxUserInput As TextBox
     Friend WithEvents btnUpdateInput As Button
     Friend WithEvents gbxDailyData As GroupBox
+    Friend WithEvents btnProcessGreen As Button
+    Friend WithEvents btnUpdate As Button
+    Friend WithEvents btnDataGreen As Button
 End Class

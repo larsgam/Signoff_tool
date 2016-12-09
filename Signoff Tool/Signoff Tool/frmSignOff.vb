@@ -6,19 +6,23 @@ Public Class Form1
     Private rbgOutputControl As RadioButtonGroup
     Private rbgMTMControl As RadioButtonGroup
 
-
+    ' Scope of Signoffs
     Dim ProcessIDs = {1, 2, 3, 4}
     Dim ProcessNames = {"Input Control", "Output Control", "MTM Comparison", "Model Performance"}
     Dim DataIDs = {1, 2, 3, 4}
     Dim DataNames = {"PFE", "CURRENT EXPOSURE", "REA", "REA ALLOCATION"}
-
     Dim RAGs = {"Green", "Amber", "Red"}
 
-
-    ' Arrays of radiobutton groups  - one for process and one for data
+    ' Define controls on form as global variables
+    '' Arrays of radiobutton groups  - one for process and one for data
     Private rbgProcessRadioButtonGroups(ProcessNames.length - 1) As RadioButtonGroup
     Private rbgDataRadioButtonGroups(DataNames.length - 1) As RadioButtonGroup
-
+    '' Arrays of textboxes for comments
+    Private tbxProcessComments(ProcessNames.length - 1) As TextBox
+    Private tbxDataComments(DataNames.length - 1) As TextBox
+    '' Arrays of textboxes for update status
+    Private tbxProcessStatus(ProcessNames.length - 1) As TextBox
+    Private tbxDataStatus(DataNames.length - 1) As TextBox
 
 
     Private Sub ExitToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles ExitToolStripMenuItem.Click
@@ -111,15 +115,18 @@ Public Class Form1
             InsertProcessRow(intID)
         Next
 
+        For Each intID In DataIDs
+            InsertDataRow(intID)
+        Next
+
 
         intID = 2
 
         oDr = moDS.Tables("Signoff_data").Rows.Find({dtpAsofdate.Value.ToString("dd-MMM-yyyy"), intID})
 
         If oDr IsNot Nothing Then
-            rbgInputControl.RAG() = oDr("RAG")
-            tbxCommentInput.Text = oDr("Signoff_Comment")
-            tbxUserInput.Text = oDr("User_ID") & " - " & oDr("SIGNOFF_DATETIME")
+                rbgInputControl.RAG() = oDr("RAG")
+                tbxUserInput.Text = oDr("User_ID") & " - " & oDr("SIGNOFF_DATETIME")
         Else
             'Add new record to table through dataset
             ' First add new row to dataset table
@@ -165,7 +172,9 @@ Public Class Form1
         End If
     End Sub
 
+    Private Sub InsertDataRow(ByVal id As Integer)
 
+    End Sub
     Private Sub InsertProcessRow(ByVal id As Integer)
         ' Checks if a record for a process signoff element is in the table - if not inserts it. 
         ' To be run for each control after changing date
@@ -175,7 +184,6 @@ Public Class Form1
         Dim strDataSQL As String
         Dim strConn As String
 
-        Dim intID As Integer
         Dim oDr As DataRow
 
 
@@ -308,7 +316,6 @@ Public Class Form1
         Dim tbxHeight As Integer
         Dim tbxwidth As Integer
 
-        Dim rbg As RadioButtonGroup
 
         Dim f As New System.Drawing.Font("Microsoft Sans Serif", 8, FontStyle.Regular)
 
@@ -354,18 +361,29 @@ Public Class Form1
             Next rag
             rbgProcessRadioButtonGroups(i) = New RadioButtonGroup(rbutton(0), rbutton(1), rbutton(2))
 
-
-
             ' Textbox for comments
-            tbx = New TextBox
-            tbx.Multiline = True
-            tbx.ScrollBars = ScrollBars.Vertical
+            tbxProcessComments(i) = New TextBox
+            tbxProcessComments(i).Multiline = True
+            tbxProcessComments(i).ScrollBars = ScrollBars.Vertical
 
-            tbx.Height = tbxHeight
-            tbx.Width = tbxwidth
-            tbx.Left = rbnxStart + 3 * (rbnWidth + rbnHSpace)
-            tbx.Top = tbxyStart
-            gbx.Controls.Add(tbx)
+            tbxProcessComments(i).Height = tbxHeight
+            tbxProcessComments(i).Width = tbxwidth
+            tbxProcessComments(i).Left = rbnxStart + 3 * (rbnWidth + rbnHSpace)
+            tbxProcessComments(i).Top = tbxyStart
+            gbx.Controls.Add(tbxProcessComments(i))
+
+            ' small non-enabled textbox for update status
+            tbxProcessStatus(i) = New TextBox
+            tbxProcessStatus(i).Height = rbutton(1).Height
+            tbxProcessStatus(i).Width = tbxwidth
+            tbxProcessStatus(i).Left = rbnxStart
+            tbxProcessStatus(i).Top = rbnyStart + rbutton(1).Height
+            tbxProcessStatus(i).Enabled = False
+            tbxProcessStatus(i).BorderStyle = BorderStyle.None
+            tbxProcessStatus(i).ForeColor = Color.Gray
+            tbxProcessStatus(i).BackColor = TabPage1.BackColor
+            tbxProcessStatus(i).Text = "test"
+            gbx.Controls.Add(tbxProcessStatus(i))
 
         Next i
 
@@ -400,15 +418,30 @@ Public Class Form1
 
 
             ' Textbox for comments
-            tbx = New TextBox
-            tbx.Multiline = True
-            tbx.ScrollBars = ScrollBars.Vertical
+            tbxDataComments(i) = New TextBox
+            tbxDataComments(i).Multiline = True
+            tbxDataComments(i).ScrollBars = ScrollBars.Vertical
 
-            tbx.Height = tbxHeight
-            tbx.Width = tbxwidth
-            tbx.Left = rbnxStart + 3 * (rbnWidth + rbnHSpace)
-            tbx.Top = tbxyStart
-            gbx.Controls.Add(tbx)
+            tbxDataComments(i).Height = tbxHeight
+            tbxDataComments(i).Width = tbxwidth
+            tbxDataComments(i).Left = rbnxStart + 3 * (rbnWidth + rbnHSpace)
+            tbxDataComments(i).Top = tbxyStart
+            gbx.Controls.Add(tbxDataComments(i))
+
+
+            ' small non-enabled textbox for update status
+            tbxDataStatus(i) = New TextBox
+            tbxDataStatus(i).Height = rbutton(1).Height
+            tbxDataStatus(i).Width = tbxwidth
+            tbxDataStatus(i).Left = rbnxStart
+            tbxDataStatus(i).Top = rbnyStart + rbutton(1).Height
+            tbxDataStatus(i).Enabled = False
+            tbxDataStatus(i).BorderStyle = BorderStyle.None
+            tbxDataStatus(i).ForeColor = Color.Gray
+            tbxDataStatus(i).BackColor = TabPage1.BackColor
+            tbxDataStatus(i).Text = "test"
+            gbx.Controls.Add(tbxDataStatus(i))
+
 
         Next i
 
@@ -417,7 +450,17 @@ Public Class Form1
 
     End Sub
 
+    Private Sub btnProcessGreen_Click(sender As Object, e As EventArgs) Handles btnProcessGreen.Click
+        For i = 0 To ProcessNames.length - 1
+            rbgProcessRadioButtonGroups(i).RAG = "G"
+        Next i
+    End Sub
 
+    Private Sub btnDataGreen_Click(sender As Object, e As EventArgs) Handles btnDataGreen.Click
+        For i = 0 To DataNames.length - 1
+            rbgDataRadioButtonGroups(i).RAG = "G"
+        Next i
+    End Sub
 End Class
 
 
