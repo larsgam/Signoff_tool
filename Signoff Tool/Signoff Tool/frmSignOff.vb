@@ -242,6 +242,10 @@ Public Class Form1
         End If
     End Sub
 
+    Private Sub RadioButton_click(sender As Object, e As EventArgs)
+        MessageBox.Show(sender.name)
+    End Sub
+
     Private Sub btnUpdateInput_Click(sender As Object, e As EventArgs) Handles btnUpdateInput.Click
         DataUpdate()
     End Sub
@@ -356,6 +360,7 @@ Public Class Form1
                 rbutton(j).Left = rbnxStart + j * (rbnWidth + rbnHSpace)
                 rbutton(j).Top = rbnyStart
                 rbutton(j).UseVisualStyleBackColor = True
+                AddHandler rbutton(j).Click, AddressOf RadioButton_click
                 gbx.Controls.Add(rbutton(j))
                 j = j + 1
             Next rag
@@ -411,6 +416,7 @@ Public Class Form1
                 rbutton(j).Left = rbnxStart + j * (rbnWidth + rbnHSpace)
                 rbutton(j).Top = rbnyStart
                 rbutton(j).UseVisualStyleBackColor = True
+                AddHandler rbutton(j).Click, AddressOf RadioButton_click
                 gbx.Controls.Add(rbutton(j))
                 j = j + 1
             Next rag
