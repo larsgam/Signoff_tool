@@ -38,6 +38,10 @@
                     mAButton.Checked = True
                 Case "G"
                     mGButton.Checked = True
+                Case Else
+                    mRButton.Checked = False
+                    mAButton.Checked = False
+                    mGButton.Checked = False
             End Select
         End Set
     End Property

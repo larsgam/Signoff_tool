@@ -24,6 +24,7 @@ Partial Class Form1
     Private Sub InitializeComponent()
         Me.TabControl = New System.Windows.Forms.TabControl()
         Me.TabPage1 = New System.Windows.Forms.TabPage()
+        Me.btnDataGreen = New System.Windows.Forms.Button()
         Me.btnProcessGreen = New System.Windows.Forms.Button()
         Me.btnUpdate = New System.Windows.Forms.Button()
         Me.gbxInput = New System.Windows.Forms.GroupBox()
@@ -41,7 +42,6 @@ Partial Class Form1
         Me.MenuStrip1 = New System.Windows.Forms.MenuStrip()
         Me.FileToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.ExitToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
-        Me.btnDataGreen = New System.Windows.Forms.Button()
         Me.TabControl.SuspendLayout()
         Me.TabPage1.SuspendLayout()
         Me.gbxInput.SuspendLayout()
@@ -74,6 +74,15 @@ Partial Class Form1
         Me.TabPage1.Size = New System.Drawing.Size(1251, 864)
         Me.TabPage1.TabIndex = 0
         Me.TabPage1.Text = "Daily Signoff"
+        '
+        'btnDataGreen
+        '
+        Me.btnDataGreen.Location = New System.Drawing.Point(412, 736)
+        Me.btnDataGreen.Name = "btnDataGreen"
+        Me.btnDataGreen.Size = New System.Drawing.Size(131, 62)
+        Me.btnDataGreen.TabIndex = 10
+        Me.btnDataGreen.Text = "All Data Green"
+        Me.btnDataGreen.UseVisualStyleBackColor = True
         '
         'btnProcessGreen
         '
@@ -255,15 +264,6 @@ Partial Class Form1
         Me.ExitToolStripMenuItem.Size = New System.Drawing.Size(124, 30)
         Me.ExitToolStripMenuItem.Text = "Exit"
         '
-        'btnDataGreen
-        '
-        Me.btnDataGreen.Location = New System.Drawing.Point(412, 736)
-        Me.btnDataGreen.Name = "btnDataGreen"
-        Me.btnDataGreen.Size = New System.Drawing.Size(131, 62)
-        Me.btnDataGreen.TabIndex = 10
-        Me.btnDataGreen.Text = "All Data Green"
-        Me.btnDataGreen.UseVisualStyleBackColor = True
-        '
         'Form1
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(9.0!, 20.0!)
@@ -274,7 +274,7 @@ Partial Class Form1
         Me.Controls.Add(Me.MenuStrip1)
         Me.MainMenuStrip = Me.MenuStrip1
         Me.Name = "Form1"
-        Me.Text = "p"
+        Me.Text = "CEM Database GUI"
         Me.TabControl.ResumeLayout(False)
         Me.TabPage1.ResumeLayout(False)
         Me.gbxInput.ResumeLayout(False)

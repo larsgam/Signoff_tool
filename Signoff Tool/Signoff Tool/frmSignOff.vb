@@ -15,23 +15,39 @@ Public Class Form1
 
     ' Define controls on form as global variables
     '' Arrays of radiobutton groups  - one for process and one for data
-    Private rbgProcessRadioButtonGroups(ProcessNames.length - 1) As RadioButtonGroup
-    Private rbgDataRadioButtonGroups(DataNames.length - 1) As RadioButtonGroup
+    Private rbgProcessRadioButtonGroups(ProcessIDs.length - 1) As RadioButtonGroup
+    Private rbgDataRadioButtonGroups(DataIDs.length - 1) As RadioButtonGroup
     '' Arrays of textboxes for comments
-    Private tbxProcessComments(ProcessNames.length - 1) As TextBox
-    Private tbxDataComments(DataNames.length - 1) As TextBox
+    Private tbxProcessComments(ProcessIDs.length - 1) As TextBox
+    Private tbxDataComments(DataIDs.length - 1) As TextBox
     '' Arrays of textboxes for update status
-    Private tbxProcessStatus(ProcessNames.length - 1) As TextBox
-    Private tbxDataStatus(DataNames.length - 1) As TextBox
+    Private tbxProcessStatus(ProcessIDs.length - 1) As TextBox
+    Private tbxDataStatus(DataIDs.length - 1) As TextBox
+
+    Dim UserID As String
 
 
     Private Sub ExitToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles ExitToolStripMenuItem.Click
-        If MessageBox.Show("Quit Signoff Application?", "Message", MessageBoxButtons.YesNo, MessageBoxIcon.Question) = DialogResult.Yes Then
+        If MessageBox.Show("Quit CEM GUI Application?", "Message", MessageBoxButtons.YesNo, MessageBoxIcon.Question) = DialogResult.Yes Then
             Me.Close()
         End If
     End Sub
 
-    Private Function SignoffDataSQLBuild()
+
+    Function GetUserName() As String
+        If TypeOf My.User.CurrentPrincipal Is
+                Security.Principal.WindowsPrincipal Then
+            'The application is using Windows authentication.
+            'The Name format is DOMAIN\USERNAME
+            Dim parts() As String = Split(My.User.Name, "\")
+            Dim username As String = parts(1)
+            Return username
+        Else
+            Return My.User.Name
+        End If
+    End Function
+
+    Private Function SignoffDataSQLBuilOld()
         Dim strSQL As String
         strSQL = "Select * FROM Signoff_data"
         Return strSQL
@@ -50,20 +66,38 @@ Public Class Form1
         Return strSQL
     End Function
 
+    Private Function SignoffDataSQLBuild()
+        Dim strSQL As String
+        strSQL = "Select a.ASOFDATE, "
+        strSQL &= " a.REPORT_DATA_GROUP_ID as ID, "
+        strSQL &= " a.RAG,"
+        strSQL &= " a.SIGNOFF_COMMENT as COMMENT,"
+        strSQL &= " a.SIGNOFF_DATETIME as DATETIME, "
+        strSQL &= " a.USER_ID"
+        strSQL &= " From REPORT_DATA_GROUP_SIGNOFF a"
+        Return strSQL
+    End Function
 
     Private Sub DataSetCreate()
         Dim oAdapter As SqlClient.SqlDataAdapter
         Dim processAdapter As SqlClient.SqlDataAdapter
+        Dim dataAdapter As SqlClient.SqlDataAdapter
+
+        Dim strDataSQLOLD As String
+
         Dim strDataSQL As String
         Dim strProcessSQL As String
         Dim strConn As String
+
+
+        strDataSQLOLD = SignoffDataSQLBuilOld()
 
         strDataSQL = SignoffDataSQLBuild()
         strProcessSQL = SignoffProcessSQLBuild()
         strConn = ConnectStringBuild()
         moDS = New DataSet()
         Try
-            oAdapter = New SqlClient.SqlDataAdapter(strDataSQL, strConn)
+            oAdapter = New SqlClient.SqlDataAdapter(strDataSQLOLD, strConn)
             oAdapter.Fill(moDS, "Signoff_data")
             With moDS.Tables("Signoff_data")
                 .PrimaryKey = New DataColumn() { .Columns("asofdate"), .Columns("data_type_id")}
@@ -74,6 +108,13 @@ Public Class Form1
             With moDS.Tables("process_signoff")
                 .PrimaryKey = New DataColumn() { .Columns("asofdate"), .Columns("id")}
             End With
+
+            dataAdapter = New SqlClient.SqlDataAdapter(strDataSQL, strConn)
+            dataAdapter.Fill(moDS, "data_signoff")
+            With moDS.Tables("data_signoff")
+                .PrimaryKey = New DataColumn() { .Columns("asofdate"), .Columns("id")}
+            End With
+
 
 
         Catch ex As Exception
@@ -99,6 +140,7 @@ Public Class Form1
         rbgInputControl = New RadioButtonGroup(rbnInputGreen, rbnInputAmber, rbnInputRed)
         DataSetCreate()
         Addbuttons()
+        dtpAsofdate_ValueChanged(sender, e)
     End Sub
 
     Private Sub dtpAsofdate_ValueChanged(sender As Object, e As EventArgs) Handles dtpAsofdate.ValueChanged
@@ -107,16 +149,19 @@ Public Class Form1
         Dim strDataSQL As String
         Dim strConn As String
 
-        Dim intID As Integer
+        Dim i As Integer
         Dim oDr As DataRow
 
+        Dim intID As Integer
 
-        For Each intID In ProcessIDs
-            InsertProcessRow(intID)
+        For i = 0 To ProcessIDs.length - 1
+            InsertProcessRow(i)
+            '          DataSetCreate()
+            SyncFormProcess(i)
         Next
 
-        For Each intID In DataIDs
-            InsertDataRow(intID)
+        For i = 0 To DataIDs.length - 1
+            InsertDataRow(i)
         Next
 
 
@@ -145,7 +190,7 @@ Public Class Form1
                 '' get connectionstring
                 strConn = ConnectStringBuild()
                 '' Build SQL String
-                strDataSQL = SignoffDataSQLBuild()
+                strDataSQL = SignoffDataSQLBuilOld()
                 '' Create data adapter
                 oAdapter = New SqlClient.SqlDataAdapter(strDataSQL, strConn)
                 '' Create commandbuilder for adapter
@@ -172,11 +217,8 @@ Public Class Form1
         End If
     End Sub
 
-    Private Sub InsertDataRow(ByVal id As Integer)
-
-    End Sub
-    Private Sub InsertProcessRow(ByVal id As Integer)
-        ' Checks if a record for a process signoff element is in the table - if not inserts it. 
+    Private Sub InsertDataRow(ByVal i As Integer)
+        ' Checks if a record for a data signoff element is in the table - if not inserts it. 
         ' To be run for each control after changing date
 
         Dim oAdapter As SqlClient.SqlDataAdapter
@@ -187,7 +229,62 @@ Public Class Form1
         Dim oDr As DataRow
 
 
-        oDr = moDS.Tables("process_signoff").Rows.Find({dtpAsofdate.Value.ToString("dd-MMM-yyyy"), id})
+        oDr = moDS.Tables("data_signoff").Rows.Find({dtpAsofdate.Value.ToString("dd-MMM-yyyy"), DataIDs(i)})
+
+        If oDr Is Nothing Then
+
+            'If no matching record, add new record to table through dataset
+            ' First add new row to dataset table
+            oDr = moDS.Tables("data_signoff").NewRow()
+            oDr.BeginEdit()
+            oDr("asofdate") = dtpAsofdate.Value.ToString("dd-MMM-yyyy")
+            oDr("id") = DataIDs(i)
+            oDr("RAG") = "N" ' "N" = Not signed off 
+            oDr.EndEdit()
+
+            moDS.Tables("data_signoff").Rows.Add(oDr)
+
+            Try
+                'add row to SQL table
+                '' get connectionstring
+                strConn = ConnectStringBuild()
+                '' Build SQL String
+                strDataSQL = SignoffDataSQLBuild()
+                '' Create data adapter
+                oAdapter = New SqlClient.SqlDataAdapter(strDataSQL, strConn)
+                '' Create commandbuilder for adapter
+                '' This will build INSERT, UPDATE and DELETE SQL
+                oBuild = New SqlClient.SqlCommandBuilder(oAdapter)
+
+                '' Get Insert command from commandbuilder to adapter
+                oAdapter.InsertCommand = oBuild.GetInsertCommand()
+
+                '' Submit Insert statement through adapter
+                oAdapter.Update(moDS, "data_signoff")
+
+                '' Tell Dataset that changes to data source are complete 
+                moDS.AcceptChanges()
+
+            Catch ex As Exception
+                MessageBox.Show("Sub 'InsertDataRow' says " & ex.Message)
+            End Try
+
+        End If
+
+    End Sub
+    Private Sub InsertProcessRow(ByVal i As Integer)
+        ' Checks if a record for a process signoff element is in the table - if not inserts it. 
+        ' To be run for each control after changing date
+
+        Dim oAdapter As SqlClient.SqlDataAdapter
+        Dim oBuild As SqlClient.SqlCommandBuilder
+        Dim strSQL As String
+        Dim strConn As String
+
+        Dim oDr As DataRow
+
+
+        oDr = moDS.Tables("process_signoff").Rows.Find({dtpAsofdate.Value.ToString("dd-MMM-yyyy"), ProcessIDs(i)})
 
         If oDr Is Nothing Then
 
@@ -196,7 +293,7 @@ Public Class Form1
             oDr = moDS.Tables("process_signoff").NewRow()
             oDr.BeginEdit()
             oDr("asofdate") = dtpAsofdate.Value.ToString("dd-MMM-yyyy")
-            oDr("id") = id
+            oDr("id") = ProcessIDs(i)
             oDr("RAG") = "N" ' "N" = Not signed off 
             oDr.EndEdit()
 
@@ -207,9 +304,9 @@ Public Class Form1
                 '' get connectionstring
                 strConn = ConnectStringBuild()
                 '' Build SQL String
-                strDataSQL = SignoffProcessSQLBuild()
+                strSQL = SignoffProcessSQLBuild()
                 '' Create data adapter
-                oAdapter = New SqlClient.SqlDataAdapter(strDataSQL, strConn)
+                oAdapter = New SqlClient.SqlDataAdapter(strSQL, strConn)
                 '' Create commandbuilder for adapter
                 '' This will build INSERT, UPDATE and DELETE SQL
                 oBuild = New SqlClient.SqlCommandBuilder(oAdapter)
@@ -231,6 +328,81 @@ Public Class Form1
 
     End Sub 'InsertProcessRow
 
+
+
+
+    Private Sub ProcessUpdateRow(ByVal i As Integer)
+        Dim oAdapter As SqlClient.SqlDataAdapter
+        Dim oBuild As SqlClient.SqlCommandBuilder
+        Dim strSQL As String
+        Dim strConn As String
+
+
+        Dim oDr As DataRow
+
+
+        ' Find the row to update
+        oDr = moDS.Tables("process_signoff").Rows.Find({dtpAsofdate.Value.ToString("dd-MMM-yyyy"), ProcessIDs(i)})
+
+        oDr.BeginEdit()
+        oDr("RAG") = rbgProcessRadioButtonGroups(i).RAG
+        oDr("comment") = tbxProcessComments(i).Text
+        oDr("User_id") = GetUserName()
+        oDr("Datetime") = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss")
+        'oDr("id") = ProcessIDs(i)
+        oDr.EndEdit()
+
+        Try
+            'add row to SQL table
+
+            '' get connectionstring
+            strConn = ConnectStringBuild()
+            ''Build SQL String
+            strSQL = SignoffProcessSQLBuild()
+            ' Create data adapter
+            oAdapter = New SqlClient.SqlDataAdapter(strSQL, strConn)
+            ' 'Create commandbuilder for adapter
+            '' 'This will build INSERT, UPDATE and DELETE SQL
+            oBuild = New SqlClient.SqlCommandBuilder(oAdapter)
+
+            '' Get UPDATE command from commandbuilder to adapter
+            oAdapter.UpdateCommand = oBuild.GetUpdateCommand()
+
+            '' Submit UPDATE statement through adapter
+            oAdapter.Update(moDS, "process_signoff")
+
+            '' Tell Dataset that changes to data source are complete 
+            moDS.AcceptChanges()
+
+        Catch ex As Exception
+            MessageBox.Show(ex.Message & " - in Sub ProcessUpdateRow")
+        End Try
+    End Sub ' ProcessUpdateRow
+
+
+
+    Private Sub SyncFormProcess(ByVal i As Integer)
+        ' Syncronised the process blocks on form with data from database
+        Dim oDr As DataRow
+
+
+        oDr = moDS.Tables("process_signoff").Rows.Find({dtpAsofdate.Value.ToString("dd-MMM-yyyy"), ProcessIDs(i)})
+        If oDr IsNot Nothing Then
+            rbgProcessRadioButtonGroups(i).RAG = oDr("RAG")
+            tbxProcessComments(i).Text = oDr.Item("Comment").ToString
+            If oDr.Item("datetime").ToString <> "" Then
+                tbxProcessStatus(i).Text = oDr.Item("USER_ID").ToString & " - " & oDr.Item("datetime").ToString
+            Else
+                tbxProcessStatus(i).Text = "Not signed off"
+            End If
+        Else
+            rbgProcessRadioButtonGroups(i).RAG = "N"
+            tbxProcessComments(i).Text = ""
+            tbxProcessStatus(i).Text = "Not signed off"
+        End If
+
+    End Sub 'SyncFormProcess
+
     Private Sub rbnInputGreen_Click(sender As Object, e As EventArgs) Handles _
                                            rbnInputGreen.Click,
                                            rbnInputAmber.Click,
@@ -250,6 +422,9 @@ Public Class Form1
         DataUpdate()
     End Sub
 
+
+
+
     Private Sub DataUpdate()
         Dim oAdapter As SqlClient.SqlDataAdapter
         Dim oBuild As SqlClient.SqlCommandBuilder
@@ -268,7 +443,7 @@ Public Class Form1
         oDr.BeginEdit()
         oDr("RAG") = rbgInputControl.RAG
         oDr("Signoff_comment") = tbxCommentInput.Text
-        oDr("User_id") = "BB5102"
+        oDr("User_id") = GetUserName()
         oDr("Signoff_Datetime") = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss")
         oDr("Data_type_id") = intID
         oDr.EndEdit()
@@ -303,7 +478,6 @@ Public Class Form1
     Private Sub Addbuttons()
         Dim gbx As GroupBox
         Dim rbutton(2) As RadioButton
-        Dim tbx As TextBox
 
         Dim xStart As Integer
         Dim yStart As Integer
@@ -322,6 +496,8 @@ Public Class Form1
 
 
         Dim f As New System.Drawing.Font("Microsoft Sans Serif", 8, FontStyle.Regular)
+        Dim fsmall As New System.Drawing.Font("Microsoft Sans Serif", 6, FontStyle.Regular)
+
 
         xStart = 10
         yStart = 30
@@ -339,7 +515,7 @@ Public Class Form1
         tbxwidth = 170
 
         ' Process Signoff 
-        For i = 0 To ProcessNames.length - 1
+        For i = 0 To ProcessIDs.length - 1
             gbx = New GroupBox
             gbx.Name = "gbxProcess" & ProcessIDs(i).ToString()
             gbx.Text = ProcessNames(i)
@@ -360,7 +536,7 @@ Public Class Form1
                 rbutton(j).Left = rbnxStart + j * (rbnWidth + rbnHSpace)
                 rbutton(j).Top = rbnyStart
                 rbutton(j).UseVisualStyleBackColor = True
-                AddHandler rbutton(j).Click, AddressOf RadioButton_click
+                'AddHandler rbutton(j).Click, AddressOf RadioButton_click
                 gbx.Controls.Add(rbutton(j))
                 j = j + 1
             Next rag
@@ -387,7 +563,8 @@ Public Class Form1
             tbxProcessStatus(i).BorderStyle = BorderStyle.None
             tbxProcessStatus(i).ForeColor = Color.Gray
             tbxProcessStatus(i).BackColor = TabPage1.BackColor
-            tbxProcessStatus(i).Text = "test"
+            'tbxProcessStatus(i).Text = "test"
+            tbxProcessStatus(i).Font = fsmall
             gbx.Controls.Add(tbxProcessStatus(i))
 
         Next i
@@ -395,7 +572,7 @@ Public Class Form1
 
         ' DATA Signoff
 
-        For i As Integer = 0 To DataNames.length - 1
+        For i As Integer = 0 To DataIDs.length - 1
             gbx = New GroupBox
             gbx.Name = "gbxData" & ProcessIDs(i).ToString()
             gbx.Text = DataNames(i)
@@ -416,7 +593,7 @@ Public Class Form1
                 rbutton(j).Left = rbnxStart + j * (rbnWidth + rbnHSpace)
                 rbutton(j).Top = rbnyStart
                 rbutton(j).UseVisualStyleBackColor = True
-                AddHandler rbutton(j).Click, AddressOf RadioButton_click
+                'AddHandler rbutton(j).Click, AddressOf RadioButton_click
                 gbx.Controls.Add(rbutton(j))
                 j = j + 1
             Next rag
@@ -445,7 +622,8 @@ Public Class Form1
             tbxDataStatus(i).BorderStyle = BorderStyle.None
             tbxDataStatus(i).ForeColor = Color.Gray
             tbxDataStatus(i).BackColor = TabPage1.BackColor
-            tbxDataStatus(i).Text = "test"
+            tbxDataStatus(i).Font = fsmall
+            '  tbxDataStatus(i).Text = "test"
             gbx.Controls.Add(tbxDataStatus(i))
 
 
@@ -467,6 +645,14 @@ Public Class Form1
             rbgDataRadioButtonGroups(i).RAG = "G"
         Next i
     End Sub
+
+    Private Sub btnUpdate_Click(sender As Object, e As EventArgs) Handles btnUpdate.Click
+        For i = 0 To ProcessIDs.length - 1
+            ProcessUpdateRow(i)
+            SyncFormProcess(i)
+        Next i
+    End Sub
 End Class
+
 
 
