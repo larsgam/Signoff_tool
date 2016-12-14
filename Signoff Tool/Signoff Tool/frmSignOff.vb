@@ -5,6 +5,8 @@ Public Class Form1
     Private rbgInputControl As RadioButtonGroup
     Private rbgOutputControl As RadioButtonGroup
     Private rbgMTMControl As RadioButtonGroup
+    Private db As String = "CEM_TEST" ' "CEM_PROD", "Hugo"
+
 
     ' Scope of Signoffs
     Dim ProcessIDs = {1, 2, 3, 4}
@@ -47,20 +49,15 @@ Public Class Form1
         End If
     End Function
 
-    Private Function SignoffDataSQLBuilOld()
-        Dim strSQL As String
-        strSQL = "Select * FROM Signoff_data"
-        Return strSQL
-    End Function
 
     Private Function SignoffProcessSQLBuild()
         Dim strSQL As String
         '        strSQL = "Select * FROM Signoff_process"
         strSQL = "Select a.ASOFDATE, "
-        strSQL &= " a.PROCESS_ID as ID, "
+        strSQL &= " a.PROCESS_ID As ID, "
         strSQL &= " a.RAG,"
-        strSQL &= " a.SIGNOFF_COMMENT as COMMENT,"
-        strSQL &= " a.SIGNOFF_DATETIME as DATETIME, "
+        strSQL &= " a.SIGNOFF_COMMENT As COMMENT,"
+        strSQL &= " a.SIGNOFF_DATETIME As DATETIME, "
         strSQL &= " a.USER_ID"
         strSQL &= " From PROCESS_SIGNOFF a"
         Return strSQL
@@ -69,39 +66,31 @@ Public Class Form1
     Private Function SignoffDataSQLBuild()
         Dim strSQL As String
         strSQL = "Select a.ASOFDATE, "
-        strSQL &= " a.REPORT_DATA_GROUP_ID as ID, "
+        strSQL &= " a.REPORT_DATA_GROUP_ID As ID, "
         strSQL &= " a.RAG,"
-        strSQL &= " a.SIGNOFF_COMMENT as COMMENT,"
-        strSQL &= " a.SIGNOFF_DATETIME as DATETIME, "
+        strSQL &= " a.SIGNOFF_COMMENT As COMMENT,"
+        strSQL &= " a.SIGNOFF_DATETIME As DATETIME, "
         strSQL &= " a.USER_ID"
         strSQL &= " From REPORT_DATA_GROUP_SIGNOFF a"
         Return strSQL
     End Function
 
     Private Sub DataSetCreate()
-        Dim oAdapter As SqlClient.SqlDataAdapter
         Dim processAdapter As SqlClient.SqlDataAdapter
         Dim dataAdapter As SqlClient.SqlDataAdapter
 
-        Dim strDataSQLOLD As String
 
         Dim strDataSQL As String
         Dim strProcessSQL As String
         Dim strConn As String
 
 
-        strDataSQLOLD = SignoffDataSQLBuilOld()
 
         strDataSQL = SignoffDataSQLBuild()
         strProcessSQL = SignoffProcessSQLBuild()
         strConn = ConnectStringBuild()
         moDS = New DataSet()
         Try
-            oAdapter = New SqlClient.SqlDataAdapter(strDataSQLOLD, strConn)
-            oAdapter.Fill(moDS, "Signoff_data")
-            With moDS.Tables("Signoff_data")
-                .PrimaryKey = New DataColumn() { .Columns("asofdate"), .Columns("data_type_id")}
-            End With
 
             processAdapter = New SqlClient.SqlDataAdapter(strProcessSQL, strConn)
             processAdapter.Fill(moDS, "process_signoff")
@@ -118,103 +107,55 @@ Public Class Form1
 
 
         Catch ex As Exception
-            MessageBox.Show(ex.Message & " in DataSetCreate Sub")
+            MessageBox.Show(ex.Message & " In DataSetCreate Sub")
         End Try
     End Sub
 
 
-
     Private Function ConnectStringBuild()
         Dim strConn As String
-        strConn = "Data Source=DESKTOP-7N67KRI\SQLEXPRESS;"
-        strConn &= "Initial Catalog=SIGNOFF;"
-        strConn &= "Integrated Security=True;"
-        strConn &= "Connect Timeout=15;"
-        strConn &= "TrustServerCertificate =True;"
-        strConn &= "ApplicationIntent=ReadWrite;"
-        strConn &= "MultiSubnetFailover =False"
+
+        Select Case db
+            Case "CEM_TEST"
+                strConn = "Data Source=rm-mssql-test;Initial Catalog=CEM_TEST;Integrated Security=True"
+            Case "CEM_PROD"
+                strConn = "Data Source = CE8S04;Initial Catalog=CEM_PROD;Integrated Security=True"
+            Case "Hugo"
+                strConn = "Data Source=DESKTOP-7N67KRI\SQLEXPRESS;"
+                strConn &= "Initial Catalog=SIGNOFF;"
+                strConn &= "Integrated Security=True;"
+                strConn &= "Connect Timeout=15;"
+                strConn &= "TrustServerCertificate =True;"
+                strConn &= "ApplicationIntent=ReadWrite;"
+                strConn &= "MultiSubnetFailover =False"
+            Case Else
+                strConn = ""
+                MessageBox.Show("No valid database connection string")
+        End Select
+
         Return strConn
     End Function
 
     Private Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
-        rbgInputControl = New RadioButtonGroup(rbnInputGreen, rbnInputAmber, rbnInputRed)
         DataSetCreate()
         Addbuttons()
         dtpAsofdate_ValueChanged(sender, e)
     End Sub
 
+
     Private Sub dtpAsofdate_ValueChanged(sender As Object, e As EventArgs) Handles dtpAsofdate.ValueChanged
-        Dim oAdapter As SqlClient.SqlDataAdapter
-        Dim oBuild As SqlClient.SqlCommandBuilder
-        Dim strDataSQL As String
-        Dim strConn As String
 
         Dim i As Integer
-        Dim oDr As DataRow
-
-        Dim intID As Integer
 
         For i = 0 To ProcessIDs.length - 1
             InsertProcessRow(i)
-            '          DataSetCreate()
             SyncFormProcess(i)
-        Next
+        Next i
 
         For i = 0 To DataIDs.length - 1
             InsertDataRow(i)
-        Next
-
-
-        intID = 2
-
-        oDr = moDS.Tables("Signoff_data").Rows.Find({dtpAsofdate.Value.ToString("dd-MMM-yyyy"), intID})
-
-        If oDr IsNot Nothing Then
-                rbgInputControl.RAG() = oDr("RAG")
-                tbxUserInput.Text = oDr("User_ID") & " - " & oDr("SIGNOFF_DATETIME")
-        Else
-            'Add new record to table through dataset
-            ' First add new row to dataset table
-            oDr = moDS.Tables("Signoff_data").NewRow()
-            oDr.BeginEdit()
-            oDr("asofdate") = dtpAsofdate.Value.ToString("dd-MMM-yyyy")
-            oDr("Data_type_id") = intID
-            'oDr("Signoff_comment") = "skrevet ind af vb"
-            oDr("RAG") = "N"
-            oDr.EndEdit()
-
-            moDS.Tables("Signoff_data").Rows.Add(oDr)
-
-            Try
-                'add row to SQL table
-                '' get connectionstring
-                strConn = ConnectStringBuild()
-                '' Build SQL String
-                strDataSQL = SignoffDataSQLBuilOld()
-                '' Create data adapter
-                oAdapter = New SqlClient.SqlDataAdapter(strDataSQL, strConn)
-                '' Create commandbuilder for adapter
-                '' This will build INSERT, UPDATE and DELETE SQL
-                oBuild = New SqlClient.SqlCommandBuilder(oAdapter)
-
-                '' Get Insert command from commandbuilder to adapter
-                oAdapter.InsertCommand = oBuild.GetInsertCommand()
-
-                '' Submit Insert statement through adapter
-                oAdapter.Update(moDS, "Signoff_data")
-
-                '' Tell Dataset that changes to data source are complete 
-                moDS.AcceptChanges()
-
-            Catch ex As Exception
-
-            End Try
-
-            rbgInputControl.RAG() = oDr("RAG")
-            tbxCommentInput.Text = ""
-            tbxUserInput.Text = "Not Signed Off"
-
-        End If
+            SyncFormData(i)
+        Next i
     End Sub
 
     Private Sub InsertDataRow(ByVal i As Integer)
@@ -272,6 +213,7 @@ Public Class Form1
         End If
 
     End Sub
+
     Private Sub InsertProcessRow(ByVal i As Integer)
         ' Checks if a record for a process signoff element is in the table - if not inserts it. 
         ' To be run for each control after changing date
@@ -380,6 +322,54 @@ Public Class Form1
     End Sub ' ProcessUpdateRow
 
 
+    Private Sub DataUpdateRow(ByVal i As Integer)
+        Dim oAdapter As SqlClient.SqlDataAdapter
+        Dim oBuild As SqlClient.SqlCommandBuilder
+        Dim strSQL As String
+        Dim strConn As String
+
+
+        Dim oDr As DataRow
+
+
+        ' Find the row to update
+        oDr = moDS.Tables("data_signoff").Rows.Find({dtpAsofdate.Value.ToString("dd-MMM-yyyy"), DataIDs(i)})
+
+        oDr.BeginEdit()
+        oDr("RAG") = rbgDataRadioButtonGroups(i).RAG
+        oDr("comment") = tbxDataComments(i).Text
+        oDr("User_id") = GetUserName()
+        oDr("Datetime") = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss")
+        oDr.EndEdit()
+
+        Try
+            'add row to SQL table
+
+            '' get connectionstring
+            strConn = ConnectStringBuild()
+            ''Build SQL String
+            strSQL = SignoffDataSQLBuild()
+            ' Create data adapter
+            oAdapter = New SqlClient.SqlDataAdapter(strSQL, strConn)
+            ' 'Create commandbuilder for adapter
+            '' 'This will build INSERT, UPDATE and DELETE SQL
+            oBuild = New SqlClient.SqlCommandBuilder(oAdapter)
+
+            '' Get UPDATE command from commandbuilder to adapter
+            oAdapter.UpdateCommand = oBuild.GetUpdateCommand()
+
+            '' Submit UPDATE statement through adapter
+            oAdapter.Update(moDS, "data_signoff")
+
+            '' Tell Dataset that changes to data source are complete 
+            moDS.AcceptChanges()
+
+        Catch ex As Exception
+            MessageBox.Show(ex.Message & " - in Sub DataUpdateRow")
+        End Try
+    End Sub ' DataUpdateRow
+
+
 
     Private Sub SyncFormProcess(ByVal i As Integer)
         ' Syncronised the process blocks on form with data from database
@@ -403,77 +393,36 @@ Public Class Form1
 
     End Sub 'SyncFormProcess
 
-    Private Sub rbnInputGreen_Click(sender As Object, e As EventArgs) Handles _
-                                           rbnInputGreen.Click,
-                                           rbnInputAmber.Click,
-                                           rbnInputRed.Click
-        If rbgInputControl.RAG = "G" Then
-            tbxCommentInput.Enabled = False
+
+
+    Private Sub SyncFormData(ByVal i As Integer)
+        ' Syncronised the data blocks on form with data from database
+        Dim oDr As DataRow
+
+
+        oDr = moDS.Tables("data_signoff").Rows.Find({dtpAsofdate.Value.ToString("dd-MMM-yyyy"), DataIDs(i)})
+        If oDr IsNot Nothing Then
+            rbgDataRadioButtonGroups(i).RAG = oDr("RAG")
+            tbxDataComments(i).Text = oDr.Item("Comment").ToString
+            If oDr.Item("datetime").ToString <> "" Then
+                tbxDataStatus(i).Text = oDr.Item("USER_ID").ToString & " - " & oDr.Item("datetime").ToString
+            Else
+                tbxDataStatus(i).Text = "Not signed off"
+            End If
         Else
-            tbxCommentInput.Enabled = True
+            rbgDataRadioButtonGroups(i).RAG = "N"
+            tbxDataComments(i).Text = ""
+            tbxDataStatus(i).Text = "Not signed off"
         End If
-    End Sub
+
+    End Sub 'SyncFormData
+
+
 
     Private Sub RadioButton_click(sender As Object, e As EventArgs)
         MessageBox.Show(sender.name)
     End Sub
 
-    Private Sub btnUpdateInput_Click(sender As Object, e As EventArgs) Handles btnUpdateInput.Click
-        DataUpdate()
-    End Sub
-
-
-
-
-    Private Sub DataUpdate()
-        Dim oAdapter As SqlClient.SqlDataAdapter
-        Dim oBuild As SqlClient.SqlCommandBuilder
-        Dim strDataSQL As String
-        Dim strConn As String
-
-
-        Dim intID As Integer
-        Dim oDr As DataRow
-
-        intID = 2
-
-        ' Find the row to update
-        oDr = moDS.Tables("Signoff_data").Rows.Find({dtpAsofdate.Value.ToString("dd-MMM-yyyy"), intID})
-
-        oDr.BeginEdit()
-        oDr("RAG") = rbgInputControl.RAG
-        oDr("Signoff_comment") = tbxCommentInput.Text
-        oDr("User_id") = GetUserName()
-        oDr("Signoff_Datetime") = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss")
-        oDr("Data_type_id") = intID
-        oDr.EndEdit()
-
-        Try
-            'add row to SQL table
-
-            '' get connectionstring
-            strConn = ConnectStringBuild()
-            ''Build SQL String
-            strDataSQL = SignoffDataSQLBuild()
-            ' Create data adapter
-            oAdapter = New SqlClient.SqlDataAdapter(strDataSQL, strConn)
-            ' 'Create commandbuilder for adapter
-            '' 'This will build INSERT, UPDATE and DELETE SQL
-            oBuild = New SqlClient.SqlCommandBuilder(oAdapter)
-
-            '' Get UPDATE command from commandbuilder to adapter
-            oAdapter.UpdateCommand = oBuild.GetUpdateCommand()
-
-            '' Submit UPDATE statement through adapter
-            oAdapter.Update(moDS, "Signoff_data")
-
-            '' Tell Dataset that changes to data source are complete 
-            moDS.AcceptChanges()
-
-        Catch ex As Exception
-            MessageBox.Show(ex.Message)
-        End Try
-    End Sub
 
     Private Sub Addbuttons()
         Dim gbx As GroupBox
@@ -651,6 +600,13 @@ Public Class Form1
             ProcessUpdateRow(i)
             SyncFormProcess(i)
         Next i
+
+        For i = 0 To DataIDs.length - 1
+            DataUpdateRow(i)
+            SyncFormData(i)
+        Next i
+
+
     End Sub
 End Class
 
